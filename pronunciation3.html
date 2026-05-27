@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Practice App</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 1.5rem; }
+        .word-display { font-size: 2rem; font-weight: bold; color: #e74c3c; margin: 20px 0; min-height: 50px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; transition: 0.3s; margin: 5px; }
+        .btn-speak { background-color: #3498db; color: white; }
+        .btn-record { background-color: #2ecc71; color: white; }
+        .btn-next { background-color: #95a5a6; color: white; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 10px; min-height: 50px; font-style: italic; }
+        .score { font-size: 1.2rem; font-weight: bold; margin-top: 10px; }
+        .status { font-size: 0.9rem; color: #7f8c8d; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>English Coach</h1>
+    
+    <div class="word-display" id="targetWord">Apple</div>
+    
+    <button class="btn btn-speak" onclick="playAudio()">🔊 Nghe mẫu</button>
+    <button class="btn btn-record" id="recordBtn">🎙️ Bắt đầu nói</button>
+    <button class="btn btn-next" onclick="nextWord()">Tiếp theo ➡️</button>
+
+    <div class="status" id="status">Nhấn nút để bắt đầu luyện tập...</div>
+    
+    <div class="result" id="transcriptText">Kết quả của bạn sẽ hiện ở đây...</div>
+    <div class="score" id="scoreDisplay"></div>
+</div>
+
+<script>
+    const words = ["Education", "Methodology", "Sustainable", "Pedagogy", "Classroom management", "English teacher"];
+    let currentIndex = 0;
+
+    // Cấu hình Web Speech API (Nhận diện giọng nói)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US'; // Chuẩn Anh - Mỹ
+    recognition.interimResults = false;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const statusLabel = document.getElementById('status');
+    const transcriptText = document.getElementById('transcriptText');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const targetWord = document.getElementById('targetWord');
+
+    // 1. Phát âm mẫu (Chuẩn Mỹ)
+    function playAudio() {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = targetWord.innerText;
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+    }
+
+    // 2. Chuyển sang từ tiếp theo
+    function nextWord() {
+        currentIndex = (currentIndex + 1) % words.length;
+        targetWord.innerText = words[currentIndex];
+        transcriptText.innerText = "Kết quả của bạn sẽ hiện ở đây...";
+        scoreDisplay.innerText = "";
+        statusLabel.innerText = "Sẵn sàng!";
+    }
+
+    // 3. Ghi âm và chấm điểm
+    recordBtn.addEventListener('click', () => {
+        recognition.start();
+        statusLabel.innerText = "Đang lắng nghe...";
+    });
+
+    recognition.onresult = (event) => {
+        const result = event.results[0][0].transcript.toLowerCase();
+        const target = targetWord.innerText.toLowerCase();
+        
+        transcriptText.innerText = `Bạn đã nói: "${result}"`;
+        
+        // Chấm điểm logic đơn giản
+        if (result.includes(target)) {
+            scoreDisplay.innerHTML = "✅ Chính xác! <span style='color: green'>100/100</span>";
+        } else {
+            scoreDisplay.innerHTML = "❌ Chưa chính xác. <span style='color: orange'>Hãy thử lại!</span>";
+        }
+        statusLabel.innerText = "Hoàn thành!";
+    };
+
+    recognition.onerror = () => {
+        statusLabel.innerText = "Lỗi micro hoặc trình duyệt không hỗ trợ.";
+    };
+</script>
+
+</body>
+</html>
